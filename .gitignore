@@ -1,0 +1,35 @@
+# Datos (descargar de Kaggle, no subir al repo)
+*.csv
+*.xlsx
+*.xls
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Entornos virtuales
+venv/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
