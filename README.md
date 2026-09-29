@@ -7,7 +7,7 @@
 | Nombre | GitHub |
 |--------|--------|
 | Brahian Ocampo Garcia | [@Brahian2215](https://github.com/Brahian2215) |
-| Carlos Andres Pineda Ospina | [@carlospineda1-coder](https://github.com/carlospineda1-coder) |
+| Carlos Andres Pineda Ospina | [@HyperXFury34](https://github.com/HyperXFury34) |
 
 ---
 
