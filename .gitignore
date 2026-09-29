@@ -33,3 +33,6 @@ Thumbs.db
 
 # Docker
 *.log
+
+# El dataset del proyecto sí se versiona: 55 kB y el notebook no corre sin él
+!fase-1/student_performance_dataset.csv
