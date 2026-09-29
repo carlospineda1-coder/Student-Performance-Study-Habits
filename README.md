@@ -6,8 +6,8 @@
 
 | Nombre | GitHub |
 |--------|--------|
-| Brahian Ocampo Garcia | [@usuario1](https://github.com/usuario1) |
-| Carlos Andres Pineda Ospina | [@usuario2](https://github.com/usuario2) |
+| Brahian Ocampo Garcia | [@Brahian2215](https://github.com/Brahian2215) |
+| Carlos Andres Pineda Ospina | [@carlospineda1-coder](https://github.com/carlospineda1-coder) |
 
 ---
 
@@ -32,14 +32,12 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
-├── fase-1/                          ← Modelo predictivo
-│   ├── README.md
-│   ├── fase1_modelo_predictivo.ipynb
-│   └── modelo/
-│       └── pipeline_modelo.joblib
-├── fase-2/                          ← Scripts y Docker (pendiente)
-├── fase-3/                          ← API REST (pendiente)
-└── fase-4/                          ← Monitoreo (pendiente)
+└── fase-1/                              ← Modelo predictivo
+    ├── README.md
+    ├── fase1_modelo_predictivo.ipynb
+    ├── student_performance_dataset.csv
+    └── modelo/
+        └── pipeline_modelo.joblib
 ```
 
 ---
@@ -64,8 +62,8 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
 
 1. Clonar el repositorio:
    ```bash
-   git clone https://github.com/USUARIO/student-performance-project.git
-   cd student-performance-project
+   git clone https://github.com/carlospineda1-coder/Student-Performance-Study-Habits.git
+   cd Student-Performance-Study-Habits
    ```
 
 2. Instalar dependencias:
@@ -73,9 +71,7 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
    pip install -r requirements.txt
    ```
 
-3. Descargar el dataset desde [Kaggle](https://www.kaggle.com/datasets/harshadapatil31/student-performance-and-study-habits-dataset) y colocar `student_performance_dataset.csv` en la carpeta `fase-1/`.
-
-4. Ejecutar el notebook:
+3. Ejecutar el notebook:
    ```bash
    cd fase-1
    jupyter notebook fase1_modelo_predictivo.ipynb
