@@ -7,7 +7,7 @@
 | Nombre | GitHub |
 |--------|--------|
 | Brahian Ocampo Garcia | [@usuario1](https://github.com/usuario1) |
-| Carlos Andres Pineda Ospina | [@usuario2](https://github.com/usuario2) |
+| Carlos Andres Pineda Ospina | [@usuario2](https://github.com/HyperXFury34) |
 
 ---
 
