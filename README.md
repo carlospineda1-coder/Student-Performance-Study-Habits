@@ -32,12 +32,22 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
-└── fase-1/                              ← Modelo predictivo
+├── fase-1/                              ← Modelo predictivo
+│   ├── README.md
+│   ├── fase1_modelo_predictivo.ipynb
+│   ├── student_performance_dataset.csv
+│   └── modelo/
+│       └── pipeline_modelo.joblib
+└── fase-2/                              ← Scripts y Docker
     ├── README.md
-    ├── fase1_modelo_predictivo.ipynb
-    ├── student_performance_dataset.csv
-    └── modelo/
-        └── pipeline_modelo.joblib
+    ├── requirements.txt
+    ├── common.py
+    ├── train.py
+    ├── predict.py
+    ├── Dockerfile
+    ├── data/
+    ├── modelo/
+    └── tests/
 ```
 
 ---
@@ -47,7 +57,7 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
 | Fase | Descripción | Estado |
 |------|-------------|--------|
 | Fase 1 | Modelo predictivo | ✅ Completada |
-| Fase 2 | Scripts y Docker | ⬜ Pendiente |
+| Fase 2 | Scripts y Docker | ✅ Completada |
 | Fase 3 | API REST | ⬜ Pendiente |
 | Fase 4 | Monitoreo básico | ⬜ Pendiente |
 
