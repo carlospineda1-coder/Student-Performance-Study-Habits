@@ -119,7 +119,12 @@ docker run --rm fase2-student-performance predict.py --input data/sample.csv
 Reentrenar dentro del contenedor (genera una nueva versión en `/app/modelo`, efímera salvo que se monte un volumen):
 
 ```bash
-docker run --rm -v "$(pwd)/modelo:/app/modelo" fase2-student-performance train.py --version v2
+# macOS / Linux / PowerShell
+docker run --rm -v "${PWD}/modelo:/app/modelo" fase2-student-performance train.py --version v2
+
+# Git Bash en Windows: $(pwd) da una ruta estilo /c/Users/... que Docker Desktop
+# no traduce bien para -v. Usar la ruta completa estilo Windows en su lugar:
+docker run --rm -v "C:/Users/<usuario>/Student-Performance-Study-Habits/fase-2/modelo:/app/modelo" fase2-student-performance train.py --version v2
 ```
 
 El `ENTRYPOINT` es `python`, así que cualquier script (`train.py` o `predict.py`) y sus flags se pasan como argumentos de `docker run`.
@@ -133,3 +138,17 @@ pytest tests
 ```
 
 Cubren: construcción del pipeline y cálculo de métricas (`test_common.py`), entrenamiento y guardado versionado (`test_train.py`), y resolución del modelo + predicción (`test_predict.py`). Usan un dataset sintético pequeño, no el CSV completo, para que corran en segundos y no dependan de métricas exactas del dataset real.
+
+---
+
+## Troubleshooting
+
+### `pip install` o `docker build` fallan con `SSLCertVerificationError` / `CERTIFICATE_VERIFY_FAILED`
+
+Causa típica en Windows: el antivirus (ej. **Avast**, con su "Web Shield") hace inspección HTTPS e inyecta su propio certificado, que ni `pip` ni el contenedor Docker reconocen como válido — porque el tráfico de red de Docker Desktop en Windows pasa por la pila de red del host, donde el antivirus también lo intercepta. Se puede confirmar revisando las variables de entorno del sistema: si aparece algo como `NODE_EXTRA_CA_CERTS=...\Avast\wscert.pem`, esa es la causa.
+
+**Solución:** desactivar temporalmente el Web Shield del antivirus (Avast: ícono en la bandeja → Protección → Protección principal → Web Shield → desactivar 10 min/1 h), reintentar el comando, y volver a activarlo al terminar. No hay que cambiar nada del código ni del Dockerfile — es un problema del entorno local, no del proyecto.
+
+### El volumen de Docker (`-v`) no persiste cambios en el host (Windows / Git Bash)
+
+En Git Bash, `$(pwd)` devuelve una ruta estilo `/c/Users/...` que Docker Desktop a veces no traduce correctamente al montar un volumen con `-v`, y el contenedor escribe en un directorio que no está realmente enlazado al host (no da error, pero los archivos "desaparecen" al salir del contenedor). Usar en su lugar la ruta completa estilo Windows (`C:/Users/<usuario>/.../fase-2/modelo:/app/modelo`), o ejecutar el comando desde PowerShell con `${PWD}`.
