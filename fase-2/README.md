@@ -110,24 +110,21 @@ Build (contexto = esta carpeta):
 docker build -t fase2-student-performance .
 ```
 
-Predecir usando el modelo ya empaquetado en la imagen:
+La imagen no incluye datos ni modelos: entran por montaje de carpeta y lo que se genera queda en el equipo anfitrión.
+
+Reentrenar dentro del contenedor (Bash):
 
 ```bash
-docker run --rm fase2-student-performance predict.py --input data/sample.csv
+docker run --rm -v "$PWD/data:/app/data:ro" -v "$PWD/modelo:/app/modelo" fase2-student-performance python train.py --version v2
 ```
 
-Reentrenar dentro del contenedor (genera una nueva versión en `/app/modelo`, efímera salvo que se monte un volumen):
+Predecir con el modelo guardado (Bash):
 
 ```bash
-# macOS / Linux / PowerShell
-docker run --rm -v "${PWD}/modelo:/app/modelo" fase2-student-performance train.py --version v2
-
-# Git Bash en Windows: $(pwd) da una ruta estilo /c/Users/... que Docker Desktop
-# no traduce bien para -v. Usar la ruta completa estilo Windows en su lugar:
-docker run --rm -v "C:/Users/<usuario>/Student-Performance-Study-Habits/fase-2/modelo:/app/modelo" fase2-student-performance train.py --version v2
+docker run --rm -v "$PWD/data:/app/data:ro" -v "$PWD/modelo:/app/modelo:ro" fase2-student-performance python predict.py --input data/sample.csv
 ```
 
-El `ENTRYPOINT` es `python`, así que cualquier script (`train.py` o `predict.py`) y sus flags se pasan como argumentos de `docker run`.
+En PowerShell se usa `${PWD}` en lugar de `$PWD`. En Git Bash sobre Windows, ver *El volumen de Docker no persiste* en Troubleshooting.
 
 ---
 
