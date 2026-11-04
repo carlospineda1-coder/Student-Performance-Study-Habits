@@ -42,6 +42,13 @@ VERSION_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 AUTO_VERSION_PATTERN = re.compile(r"v(\d+)")
 
 
+def non_negative(text):
+    value = float(text)
+    if value < 0:
+        raise argparse.ArgumentTypeError("no puede ser negativo")
+    return value
+
+
 def fraction(text):
     value = float(text)
     if not 0 < value < 1:
@@ -58,7 +65,7 @@ def parse_args(argv=None):
     parser.add_argument("--version", help="Identificador de la versión, p. ej. v2 (default: siguiente vN libre)")
     parser.add_argument("--seed", type=int, default=42, help="Semilla de la partición (default: %(default)s)")
     parser.add_argument("--test-size", type=fraction, default=0.2, help="Proporción de prueba (default: %(default)s)")
-    parser.add_argument("--alpha", type=float, default=0.1, help="Regularización de Lasso (default: %(default)s)")
+    parser.add_argument("--alpha", type=non_negative, default=0.1, help="Regularización de Lasso (default: %(default)s)")
     return parser.parse_args(argv)
 
 
