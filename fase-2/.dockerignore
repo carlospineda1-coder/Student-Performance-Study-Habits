@@ -1,0 +1,15 @@
+# Los datos y los modelos entran por montaje de carpeta, no dentro de la imagen
+data/
+models/
+modelo/
+outputs/
+
+tests/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.git/
+.env
+*.md
