@@ -16,7 +16,8 @@ Todos los comandos se ejecutan desde la carpeta `fase-2`.
 - **Predicciones mayores de 100.** El notebook afirmaba que el modelo no podía superar 100, pero en el conjunto de prueba seis predicciones lo superaban, con un máximo de 105.61. Se corrigió la frase y la predicción se recorta a 0–100 tanto en la evaluación como en `predict.py`. El MAE baja de 4.936 a 4.866. Como el puntaje real está en 0–100, recortar no puede aumentar el error: la decisión no se tomó mirando el conjunto de prueba.
 - **Entorno registrado.** `requirements.txt` fija las versiones exactas con las que se generó el modelo, y cada `metadata.json` guarda las versiones de Python y de las librerías.
 - **Carga desde un proceso independiente.** `predict.py` carga el pipeline guardado sin reentrenar, y una prueba comprueba que da las mismas predicciones que el modelo antes de guardarlo.
-- **Contrato de entrada.** Las 9 columnas, sus tipos y sus categorías válidas están en la sección Datos. Un tipo incompatible o una categoría nueva se rechazan.
+- **Correlación entre predictoras.** Ninguna pareja de predictoras numéricas supera 0.044 de correlación en valor absoluto. Como no hay redundancia que justifique quitar alguna, se conservan las nueve. Con el objetivo, las correlaciones van de 0.15 (sueño) a 0.57 (horas de estudio), pero una correlación individual moderada no limita lo que el modelo logra con todas juntas. Lasso anula por su cuenta los coeficientes de `gender` y `parental_education`.
+- **Contrato de entrada.** Las 9 columnas, sus tipos, unidades y categorías válidas están en la sección Datos. Un tipo incompatible o una categoría nueva se rechazan.
 
 ## Estructura
 
@@ -54,17 +55,17 @@ pip install -r requirements.txt
 
 El CSV de predicción necesita estas 9 columnas, en cualquier orden:
 
-| Columna | Tipo | Valores en el entrenamiento |
-|---------|------|-----------------------------|
-| `study_time_hours` | numérica | 0.5 – 8.1 |
-| `attendance_percent` | numérica | 54.8 – 100 |
-| `sleep_hours` | numérica | 3.2 – 10 |
-| `previous_grade` | numérica | 31.3 – 100 |
-| `gender` | categórica | `Female`, `Male` |
-| `parental_education` | categórica | `None`, `High School`, `Bachelors`, `Masters`, `PhD` |
-| `internet_access` | categórica | `Yes`, `No` |
-| `extracurricular_activities` | categórica | `Yes`, `No` |
-| `part_time_job` | categórica | `Yes`, `No` |
+| Columna | Tipo | Unidad | Valores en el entrenamiento |
+|---------|------|--------|-----------------------------|
+| `study_time_hours` | numérica | horas de estudio (la fuente no indica si por día o por semana) | 0.5 – 8.1 |
+| `attendance_percent` | numérica | porcentaje de asistencia | 54.8 – 100 |
+| `sleep_hours` | numérica | horas de sueño | 3.2 – 10 |
+| `previous_grade` | numérica | nota previa, escala 0–100 | 31.3 – 100 |
+| `gender` | categórica | — | `Female`, `Male` |
+| `parental_education` | categórica | — | `None`, `High School`, `Bachelors`, `Masters`, `PhD` |
+| `internet_access` | categórica | — | `Yes`, `No` |
+| `extracurricular_activities` | categórica | — | `Yes`, `No` |
+| `part_time_job` | categórica | — | `Yes`, `No` |
 
 `None` en `parental_education` es una categoría (padres sin educación formal), no un dato faltante.
 
