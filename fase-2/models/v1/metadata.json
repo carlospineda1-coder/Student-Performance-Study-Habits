@@ -1,0 +1,113 @@
+{
+  "version": "v1",
+  "created_at": "2026-11-04T22:15:58+00:00",
+  "problem_type": "regression",
+  "target": "final_exam_score",
+  "algorithm": "Lasso",
+  "model_params": {
+    "alpha": 0.1,
+    "copy_X": true,
+    "fit_intercept": true,
+    "max_iter": 1000,
+    "positive": false,
+    "precompute": false,
+    "random_state": null,
+    "selection": "cyclic",
+    "tol": 0.0001,
+    "warm_start": false
+  },
+  "seed": 42,
+  "features": [
+    {
+      "name": "study_time_hours",
+      "type": "float"
+    },
+    {
+      "name": "attendance_percent",
+      "type": "float"
+    },
+    {
+      "name": "sleep_hours",
+      "type": "float"
+    },
+    {
+      "name": "previous_grade",
+      "type": "float"
+    },
+    {
+      "name": "gender",
+      "type": "category"
+    },
+    {
+      "name": "parental_education",
+      "type": "category"
+    },
+    {
+      "name": "internet_access",
+      "type": "category"
+    },
+    {
+      "name": "extracurricular_activities",
+      "type": "category"
+    },
+    {
+      "name": "part_time_job",
+      "type": "category"
+    }
+  ],
+  "categories": {
+    "gender": [
+      "Female",
+      "Male"
+    ],
+    "parental_education": [
+      "Bachelors",
+      "High School",
+      "Masters",
+      "None",
+      "PhD"
+    ],
+    "internet_access": [
+      "No",
+      "Yes"
+    ],
+    "extracurricular_activities": [
+      "No",
+      "Yes"
+    ],
+    "part_time_job": [
+      "No",
+      "Yes"
+    ]
+  },
+  "missing_values": {
+    "numeric": "median",
+    "categorical": "most_frequent"
+  },
+  "output_range": [
+    0.0,
+    100.0
+  ],
+  "data": {
+    "source": "https://www.kaggle.com/datasets/harshadapatil31/student-performance-and-study-habits-dataset",
+    "file": "student_performance_dataset.csv",
+    "sha256": "9b49111a2118ae0dec1e65c4a5c6cdd117e85c8f3679b29b37d6f9b5ab6335ea",
+    "n_rows": 1000
+  },
+  "split": {
+    "strategy": "train_test_split aleatorio; sin grupos, una fila por estudiante",
+    "test_size": 0.2,
+    "n_train": 800,
+    "n_test": 200
+  },
+  "metric": "mae",
+  "python_version": "3.11.2",
+  "libraries": {
+    "scikit-learn": "1.9.1",
+    "pandas": "3.0.6",
+    "numpy": "2.4.6",
+    "joblib": "1.6.0"
+  },
+  "requirements": "requirements.txt",
+  "code_version": "395fe1ec32a94d02f0cf5bd1e3ed8dc162662ab7"
+}

@@ -12,12 +12,14 @@ __pycache__/
 dist/
 build/
 .eggs/
+.pytest_cache/
 
 # Jupyter
 .ipynb_checkpoints/
 
 # Entornos virtuales
 venv/
+.venv/
 env/
 .env/
 
@@ -36,3 +38,7 @@ Thumbs.db
 
 # El dataset del proyecto sí se versiona: 55 kB y el notebook no corre sin él
 !fase-1/student_performance_dataset.csv
+
+# fase-2 necesita su propia copia del dataset para ser autocontenida (Docker, scripts)
+!fase-2/data/
+!fase-2/data/*.csv
