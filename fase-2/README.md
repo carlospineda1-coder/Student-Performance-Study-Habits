@@ -2,7 +2,21 @@
 
 Convierte el modelo de la Fase 1 en una aplicación: `train.py` entrena y guarda versiones identificables del modelo, y `predict.py` carga una versión y predice `final_exam_score` (0–100) sin reentrenar. Ambos corren en local y en Docker. Se conservan el problema, los datos y el modelo de la Fase 1: Lasso con `alpha=0.1` y partición 80/20 con semilla 42.
 
+**Problema:** regresión. Se predice el puntaje del examen final a partir de hábitos de estudio, estilo de vida y datos demográficos de 1000 estudiantes.
+
+**Integrantes:** Brahian Ocampo Garcia ([@Brahian2215](https://github.com/Brahian2215)) y Carlos Andres Pineda Ospina ([@HyperXFury34](https://github.com/HyperXFury34)).
+
+**Versión entregada:** etiqueta de Git `entrega-2`.
+
 Todos los comandos se ejecutan desde la carpeta `fase-2`.
+
+## Correcciones respecto a la Fase 1
+
+- **Entradas incompletas.** La Fase 1 no definía qué hacer con una celda vacía. Ahora el pipeline la imputa con lo aprendido en el entrenamiento: mediana en numéricas, valor más frecuente en categóricas. `None` sigue siendo una categoría. El dataset no tiene celdas vacías, así que el modelo ajustado es el mismo: MAE sin recorte de 4.936, igual que en la Fase 1.
+- **Predicciones mayores de 100.** El notebook afirmaba que el modelo no podía superar 100, pero en el conjunto de prueba seis predicciones lo superaban, con un máximo de 105.61. Se corrigió la frase y la predicción se recorta a 0–100 tanto en la evaluación como en `predict.py`. El MAE baja de 4.936 a 4.866. Como el puntaje real está en 0–100, recortar no puede aumentar el error: la decisión no se tomó mirando el conjunto de prueba.
+- **Entorno registrado.** `requirements.txt` fija las versiones exactas con las que se generó el modelo, y cada `metadata.json` guarda las versiones de Python y de las librerías.
+- **Carga desde un proceso independiente.** `predict.py` carga el pipeline guardado sin reentrenar, y una prueba comprueba que da las mismas predicciones que el modelo antes de guardarlo.
+- **Contrato de entrada.** Las 9 columnas, sus tipos y sus categorías válidas están en la sección Datos. Un tipo incompatible o una categoría nueva se rechazan.
 
 ## Estructura
 
@@ -17,7 +31,9 @@ fase-2/
 ├── data/
 │   ├── student_performance_dataset.csv   # dataset de Kaggle (copia del de fase-1)
 │   └── ejemplo_prediccion.csv            # 3 filas sin la variable objetivo, una con una celda vacía
-├── models/<versión>/  # modelo.joblib, metrics.json y metadata.json de cada versión
+├── models/            # cada versión con modelo.joblib, metrics.json y metadata.json
+│   ├── v1/            # entrenada en local
+│   └── v-docker/      # entrenada dentro del contenedor
 ├── outputs/           # predicciones generadas (no se versiona)
 └── tests/
 ```
@@ -125,6 +141,72 @@ Usan datos sintéticos pequeños y carpetas temporales: no tocan `models/` ni de
 - una columna ausente, un valor no numérico, una categoría nueva o un modelo inexistente terminan con un error claro, código distinto de cero y sin archivo de salida;
 - una segunda versión conserva intacta la primera, ambas cargan, y un identificador repetido no sobrescribe nada;
 - la predicción se recorta a 0–100.
+
+## Resultados
+
+Versión `v1`, evaluada sobre las 200 filas de prueba:
+
+| Modelo | MAE | RMSE | R² |
+|--------|-----|------|----|
+| Lasso (con recorte a 0–100) | 4.866 | 6.295 | 0.632 |
+| Lasso sin recorte | 4.936 | 6.366 | 0.624 |
+| Modelo base (media del entrenamiento) | 8.585 | 10.501 | −0.025 |
+
+El modelo reduce el MAE del modelo base en un 43.3 %. La versión `v-docker`, entrenada dentro del contenedor con Python 3.11.18, da exactamente las mismas métricas que `v1`, entrenada en local con Python 3.11.2.
+
+## Limitaciones
+
+- **Los datos son simulados.** Kaggle los describe como *Simulated dataset* (licencia CC0, versión 1). No representan una población real de estudiantes: las conclusiones no se trasladan a estudiantes reales sin validarlas con datos reales.
+- **La fuente no tiene diccionario de columnas.** No documenta unidades ni el significado de `None` en `parental_education`; leerlo como *sin educación formal* es interpretación nuestra, por su lugar en la escala. Tampoco dice cuándo se miden la asistencia y los hábitos. Si se miden al final del curso, el modelo no sirve como alerta temprana.
+- **No está validado como detector de riesgo.** Un MAE promedio no dice cuántos estudiantes por debajo de un umbral se detectan. Para eso habría que definir un umbral académico y medir los aciertos y las falsas alertas.
+- **Extrapolación.** Fuera de los rangos del entrenamiento (sección Datos), el modelo extrapola en línea recta. Esos valores no se rechazan: solo se recorta el resultado a 0–100.
+- **Commit dentro de Docker.** El hash llega como argumento al construir la imagen, así que no indica si había cambios sin confirmar. En local sí: `git describe --dirty` agrega `-dirty`.
+
+## Evidencia de ejecución
+
+En local (Bash, Python 3.11.2):
+
+```
+$ python -m pytest
+11 passed in 0.40s
+
+$ python train.py --data data/student_performance_dataset.csv --output-dir models --version v1 --seed 42
+Versión v1: 800 filas de entrenamiento, 200 de prueba (semilla 42)
+                       MAE    RMSE      R2
+Lasso               4.8657  6.2946  0.6319
+Lasso sin recorte   4.9360  6.3659  0.6235
+Modelo base         8.5847 10.5013 -0.0245
+Modelo: models/v1/modelo.joblib
+Métricas: models/v1/metrics.json
+Metadatos: models/v1/metadata.json
+
+$ python train.py --data data/student_performance_dataset.csv --output-dir models --version v1 --seed 42
+Error: La versión v1 ya existe en models/v1; usa otro --version
+
+$ python predict.py --model models/v1 --input data/ejemplo_prediccion.csv --output outputs/predicciones.csv
+3 predicciones guardadas en outputs/predicciones.csv
+
+$ python predict.py --model models/v9 --input data/ejemplo_prediccion.csv --output outputs/predicciones.csv
+Error: No existe el modelo models/v9
+```
+
+`outputs/predicciones.csv` (la tercera fila tiene `sleep_hours` vacío y se imputa):
+
+```
+study_time_hours,attendance_percent,sleep_hours,previous_grade,gender,parental_education,internet_access,extracurricular_activities,part_time_job,prediccion
+5.0,90.0,7.0,80.0,Female,Bachelors,Yes,Yes,No,96.71768844752711
+2.0,60.0,5.0,50.0,Male,None,No,No,Yes,54.092953845099565
+3.5,75.0,,65.0,Female,High School,Yes,No,No,80.059732182935
+```
+
+En Docker (Bash, con los comandos de la sección Docker), `models/v-docker/` quedó en el equipo anfitrión después de eliminar el contenedor, y su predicción sobre el ejemplo coincide fila por fila con la de `v1`.
+
+## Fuentes
+
+- [Student Performance & Study Habits Dataset — Kaggle](https://www.kaggle.com/datasets/harshadapatil31/student-performance-and-study-habits-dataset)
+- Documentación de scikit-learn: [Pipeline y ColumnTransformer](https://scikit-learn.org/stable/modules/compose.html), [SimpleImputer](https://scikit-learn.org/stable/modules/impute.html), [Lasso](https://scikit-learn.org/stable/modules/linear_model.html#lasso), [DummyRegressor](https://scikit-learn.org/stable/modules/model_evaluation.html#dummy-estimators)
+- Documentación de Docker: [bind mounts](https://docs.docker.com/engine/storage/bind-mounts/)
+- [Curso IA para las Ciencias e Ingenierías](https://rramosp.github.io/ai4eng.v1/)
 
 ## Troubleshooting
 
