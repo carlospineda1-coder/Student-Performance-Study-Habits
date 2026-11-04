@@ -87,6 +87,8 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
    jupyter notebook fase1_modelo_predictivo.ipynb
    ```
 
+La Fase 2 (scripts y Docker) tiene su propio entorno e instrucciones en [fase-2/README.md](fase-2/README.md).
+
 ---
 
 ## Recursos
