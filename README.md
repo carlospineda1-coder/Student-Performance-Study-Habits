@@ -46,7 +46,7 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
     ├── predict.py
     ├── Dockerfile
     ├── data/
-    ├── modelo/
+    ├── models/
     └── tests/
 ```
 

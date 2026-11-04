@@ -1,142 +1,130 @@
 # Fase 2 — Scripts y Docker
 
-## Objetivo
+Convierte el modelo de la Fase 1 en una aplicación: `train.py` entrena y guarda versiones identificables del modelo, y `predict.py` carga una versión y predice `final_exam_score` (0–100) sin reentrenar. Ambos corren en local y en Docker. Se conservan el problema, los datos y el modelo de la Fase 1: Lasso con `alpha=0.1` y partición 80/20 con semilla 42.
 
-Convertir el modelo entrenado en la Fase 1 en una aplicación reutilizable: entrenar y generar predicciones desde la línea de comandos, empaquetada en Docker, con el modelo versionado y pruebas básicas. No se entrena un modelo nuevo — `train.py` reproduce exactamente las decisiones fijadas en la Fase 1 (mismas columnas, mismo split 80/20 con `random_state=42`, algoritmo Lasso con `alpha=0.1`).
-
----
+Todos los comandos se ejecutan desde la carpeta `fase-2`.
 
 ## Estructura
 
 ```
 fase-2/
-├── README.md
+├── common.py          # lectura y validación de datos, pipeline, predicción, métricas y carga de versiones
+├── train.py           # entrena y guarda una versión
+├── predict.py         # predice con una versión guardada
 ├── requirements.txt
-├── common.py                   # columnas, pipeline y métricas compartidas por train.py y predict.py
-├── train.py                    # entrena y versiona el modelo
-├── predict.py                  # genera predicciones con el modelo versionado
 ├── Dockerfile
+├── .dockerignore
 ├── data/
-│   ├── student_performance_dataset.csv   # dataset (copia del usado en fase-1)
-│   └── sample.csv                         # 2 filas de ejemplo para predict.py
-├── modelo/
-│   ├── metadata.json            # historial de versiones entrenadas
-│   └── pipeline_modelo_v1.joblib
+│   ├── student_performance_dataset.csv   # dataset de Kaggle (copia del de fase-1)
+│   └── ejemplo_prediccion.csv            # 3 filas sin la variable objetivo, una con una celda vacía
+├── models/<versión>/  # modelo.joblib, metrics.json y metadata.json de cada versión
+├── outputs/           # predicciones generadas (no se versiona)
 └── tests/
-    ├── conftest.py
-    ├── test_common.py
-    ├── test_train.py
-    └── test_predict.py
 ```
 
----
+## Entorno
 
-## Instalación
+Python 3.11 (la imagen Docker usa 3.11.18).
 
 ```bash
+python3.11 -m venv .venv
+source .venv/bin/activate          # PowerShell: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
----
+## Datos
 
-## Entrenar (`train.py`)
+[Student Performance & Study Habits — Kaggle](https://www.kaggle.com/datasets/harshadapatil31/student-performance-and-study-habits-dataset). El archivo está versionado en `data/student_performance_dataset.csv`: no hace falta descargarlo ni tener credenciales.
 
-```bash
-python train.py
-```
+El CSV de predicción necesita estas 9 columnas, en cualquier orden:
 
-Entrena el pipeline (preprocesamiento + Lasso) sobre `data/student_performance_dataset.csv`, imprime MAE/RMSE/R² sobre el conjunto de prueba y guarda el modelo versionado en `modelo/`.
+| Columna | Tipo | Valores en el entrenamiento |
+|---------|------|-----------------------------|
+| `study_time_hours` | numérica | 0.5 – 8.1 |
+| `attendance_percent` | numérica | 54.8 – 100 |
+| `sleep_hours` | numérica | 3.2 – 10 |
+| `previous_grade` | numérica | 31.3 – 100 |
+| `gender` | categórica | `Female`, `Male` |
+| `parental_education` | categórica | `None`, `High School`, `Bachelors`, `Masters`, `PhD` |
+| `internet_access` | categórica | `Yes`, `No` |
+| `extracurricular_activities` | categórica | `Yes`, `No` |
+| `part_time_job` | categórica | `Yes`, `No` |
 
-Opciones principales:
+`None` en `parental_education` es una categoría (padres sin educación formal), no un dato faltante.
 
-| Flag | Default | Descripción |
-|------|---------|-------------|
-| `--data` | `data/student_performance_dataset.csv` | CSV de entrenamiento |
-| `--model-dir` | `modelo` | Carpeta donde se guarda el modelo |
-| `--version` | autoincremental (`v1`, `v2`, ...) | Etiqueta de la versión a generar |
-| `--alpha` | `0.1` | Parámetro del Lasso |
-| `--test-size` | `0.2` | Proporción del split de prueba |
-| `--random-state` | `42` | Semilla del split |
-
----
-
-## Predecir (`predict.py`)
+## Entrenar
 
 ```bash
-python predict.py --input data/sample.csv
+python train.py --help
+python train.py --data data/student_performance_dataset.csv --output-dir models --version v1 --seed 42
 ```
 
-Carga la versión más reciente registrada en `modelo/metadata.json`, predice `final_exam_score` para cada fila del CSV de entrada y agrega la columna `predicted_final_exam_score`. El CSV de entrada debe tener las 9 columnas predictoras (ver `common.FEATURE_COLS`).
+La variable objetivo es `final_exam_score`, fija en `common.py`. Opciones adicionales: `--test-size` (default 0.2) y `--alpha` (default 0.1). Sin `--version` se usa el siguiente `vN` libre.
 
-Opciones principales:
+El script valida las columnas y la variable objetivo, separa entrenamiento y prueba antes de ajustar el preprocesamiento y evalúa el modelo y el modelo base (la media del entrenamiento) sobre la misma partición. Después guarda en `models/<versión>/`:
 
-| Flag | Descripción |
-|------|-------------|
-| `--input` | **Obligatorio.** CSV con las columnas predictoras |
-| `--output` | Ruta de salida; si se omite, imprime a stdout |
-| `--model` | Ruta directa a un `.joblib`, salta la resolución por `metadata.json` |
-| `--model-dir` | Carpeta del modelo versionado (default `modelo`) |
+- `modelo.joblib`: el pipeline completo (imputación, escalado, codificación y Lasso).
+- `metrics.json`: MAE, RMSE y R² del modelo, del modelo sin recorte y del modelo base.
+- `metadata.json`: versión, fecha, variables y tipos, categorías, parámetros, semilla, datos (archivo, SHA-256 y filas), partición, versiones de Python y librerías, y commit del código.
 
----
+Una versión que ya existe se rechaza con un error: nunca se sobrescribe.
 
-## Versionado del modelo
+Lasso es determinista: con los mismos datos, semilla y versiones de `requirements.txt` se obtienen las mismas métricas.
 
-Cada corrida de `train.py` guarda un archivo `modelo/pipeline_modelo_v{N}.joblib` nuevo (no sobrescribe el anterior) y registra la versión en `modelo/metadata.json`:
+## Predecir
 
-```json
-{
-  "latest": "v1",
-  "versions": {
-    "v1": {
-      "path": "pipeline_modelo_v1.joblib",
-      "created_at": "2026-...",
-      "alpha": 0.1,
-      "metrics": {"mae": 4.936, "rmse": 6.3659, "r2": 0.6235},
-      "n_train": 800
-    }
-  }
-}
+```bash
+python predict.py --help
+python predict.py --model models/v1 --input data/ejemplo_prediccion.csv --output outputs/predicciones.csv
 ```
 
-`predict.py` usa por defecto la versión marcada como `latest`. Para fijar una versión específica: `python predict.py --input ... --model modelo/pipeline_modelo_v1.joblib`.
+`--model` acepta la carpeta de la versión o su `modelo.joblib`. La salida es el CSV de entrada, en el mismo orden, con la columna `prediccion` al final: el puntaje predicho, recortado a 0–100.
 
----
+| Caso | Qué pasa |
+|------|----------|
+| Celda vacía | Se imputa con lo aprendido en el entrenamiento: mediana en numéricas, valor más frecuente en categóricas |
+| Columnas adicionales | Se ignoran para predecir y se conservan en la salida (sirven, por ejemplo, para un identificador) |
+| Columna requerida ausente, valor no numérico o categoría no vista en el entrenamiento | Error con la columna y la línea del CSV, código de salida 1 y ningún archivo de salida |
+| Modelo inexistente o ilegible | Error y código de salida 1 |
 
 ## Docker
 
-Build (contexto = esta carpeta):
-
-```bash
-docker build -t fase2-student-performance .
-```
-
 La imagen no incluye datos ni modelos: entran por montaje de carpeta y lo que se genera queda en el equipo anfitrión.
 
-Reentrenar dentro del contenedor (Bash):
+Bash (Linux o macOS). `--user` hace que los archivos generados sean del usuario y no de root:
 
 ```bash
-docker run --rm -v "$PWD/data:/app/data:ro" -v "$PWD/modelo:/app/modelo" fase2-student-performance python train.py --version v2
+docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) -t fase2-student-performance .
+mkdir -p models outputs
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/data:/app/data:ro" -v "$PWD/models:/app/models" fase2-student-performance python train.py --data data/student_performance_dataset.csv --output-dir models --version v-docker --seed 42
+docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/data:/app/data:ro" -v "$PWD/models:/app/models:ro" -v "$PWD/outputs:/app/outputs" fase2-student-performance python predict.py --model models/v-docker --input data/ejemplo_prediccion.csv --output outputs/predicciones.csv
 ```
 
-Predecir con el modelo guardado (Bash):
+PowerShell (Windows):
+
+```powershell
+docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) -t fase2-student-performance .
+mkdir -Force models, outputs
+docker run --rm -v "${PWD}/data:/app/data:ro" -v "${PWD}/models:/app/models" fase2-student-performance python train.py --data data/student_performance_dataset.csv --output-dir models --version v-docker --seed 42
+docker run --rm -v "${PWD}/data:/app/data:ro" -v "${PWD}/models:/app/models:ro" -v "${PWD}/outputs:/app/outputs" fase2-student-performance python predict.py --model models/v-docker --input data/ejemplo_prediccion.csv --output outputs/predicciones.csv
+```
+
+En Git Bash sobre Windows, ver *El volumen de Docker no persiste* en Troubleshooting.
+
+## Pruebas
 
 ```bash
-docker run --rm -v "$PWD/data:/app/data:ro" -v "$PWD/modelo:/app/modelo:ro" fase2-student-performance python predict.py --input data/sample.csv
+python -m pytest
 ```
 
-En PowerShell se usa `${PWD}` en lugar de `$PWD`. En Git Bash sobre Windows, ver *El volumen de Docker no persiste* en Troubleshooting.
+Usan datos sintéticos pequeños y carpetas temporales: no tocan `models/` ni descargan nada. Comprueban que:
 
----
-
-## Pruebas (`pytest`)
-
-```bash
-pytest tests
-```
-
-Cubren: construcción del pipeline y cálculo de métricas (`test_common.py`), entrenamiento y guardado versionado (`test_train.py`), y resolución del modelo + predicción (`test_predict.py`). Usan un dataset sintético pequeño, no el CSV completo, para que corran en segundos y no dependan de métricas exactas del dataset real.
-
----
+- el entrenamiento genera un artefacto cargable, sus métricas y sus metadatos;
+- el modelo cargado da una predicción por fila, en orden, igual a la del modelo antes de guardarlo;
+- una celda vacía se imputa con el valor aprendido en el entrenamiento;
+- una columna ausente, un valor no numérico, una categoría nueva o un modelo inexistente terminan con un error claro, código distinto de cero y sin archivo de salida;
+- una segunda versión conserva intacta la primera, ambas cargan, y un identificador repetido no sobrescribe nada;
+- la predicción se recorta a 0–100.
 
 ## Troubleshooting
 
