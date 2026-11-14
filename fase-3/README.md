@@ -33,7 +33,7 @@ La API se configura con variables de entorno. Se leen en cada solicitud.
 | `MODELS_DIR` | Carpeta de las versiones | `fase-2/models` |
 | `DATA_PATH` | CSV con el que entrena `/train` | `fase-2/data/student_performance_dataset.csv` |
 
-**Seleccionar una versión.** Las disponibles son las carpetas de `fase-2/models/` (`v1` y `v-docker`, más las que cree `/train`). Para usar otra, se arranca la API con `MODEL_VERSION=<versión>`. Si esa versión no existe, `/predict` responde 503 y `/health` y `/train` siguen funcionando.
+**Seleccionar una versión.** Las disponibles son las carpetas de `fase-2/models/` (`v1`, `v-docker` y `v2`, más las que cree `/train`). Para usar otra, se arranca la API con `MODEL_VERSION=<versión>`. Si esa versión no existe, `/predict` responde 503 y `/health` y `/train` siguen funcionando.
 
 ## Rutas
 
@@ -180,6 +180,25 @@ $ curl -X POST http://localhost:8000/train
 $ curl -X POST http://localhost:8000/predict -H "Content-Type: application/json" -d '{"study_time_hours": 4.0, "attendance_percent": 98.0}'
 {"detail":"Falta el campo obligatorio sleep_hours; Falta el campo obligatorio previous_grade; ..."}
 ```
+
+En Docker (Bash, con los comandos de la sección Docker):
+
+```
+$ curl http://localhost:8000/health
+{"status":"ok"}
+
+$ python fase-3/cliente.py
+...
+-> 200 {"prediccion": 93.72052191273534, "version": "v1"}
+
+$ curl -X POST http://localhost:8000/train
+{"version":"v2","metricas":{"mae":4.865736449463372,"rmse":6.294585894007378,"r2":0.6318939850653977}}
+
+$ ls fase-2/models
+v1  v2  v-docker
+```
+
+`fase-2/models/v2/` es la versión que creó esa llamada a `/train` dentro del contenedor. Quedó en el equipo anfitrión y está versionada en el repositorio.
 
 ## Fuentes
 
