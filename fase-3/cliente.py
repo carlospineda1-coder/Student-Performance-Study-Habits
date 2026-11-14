@@ -1,7 +1,7 @@
 """Cliente de prueba: consulta /health y pide una predicción para el primer estudiante del dataset.
 
 Uso, con la API en ejecución:
-    python cliente.py [--url http://localhost:8000]
+    python cliente.py [--url http://localhost:8000] [--omitir CAMPO]
 """
 
 import argparse
@@ -38,14 +38,17 @@ def call(url, payload=None):
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Envía una predicción de ejemplo a la API.")
     parser.add_argument("--url", default="http://localhost:8000", help="Dirección de la API (default: %(default)s)")
-    base_url = parser.parse_args(argv).url.rstrip("/")
+    parser.add_argument("--omitir", metavar="CAMPO", choices=RECORD, help="Envía el registro sin ese campo, para ver el rechazo")
+    args = parser.parse_args(argv)
+    base_url = args.url.rstrip("/")
+    record = {key: value for key, value in RECORD.items() if key != args.omitir}
 
     try:
         status, body = call(f"{base_url}/health")
         print("GET /health ->", status, json.dumps(body))
         print("POST /predict")
-        print(json.dumps(RECORD, indent=2))
-        status, body = call(f"{base_url}/predict", RECORD)
+        print(json.dumps(record, indent=2))
+        status, body = call(f"{base_url}/predict", record)
     except urllib.error.URLError as error:
         print(f"Error: no se pudo conectar con {base_url}: {error.reason}", file=sys.stderr)
         return 1
