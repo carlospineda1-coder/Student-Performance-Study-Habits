@@ -1,0 +1,5 @@
+-r ../fase-2/requirements.txt
+fastapi==0.162.7
+uvicorn==0.54.0
+# Lo usa el cliente de pruebas de FastAPI
+httpx2==2.16.0
