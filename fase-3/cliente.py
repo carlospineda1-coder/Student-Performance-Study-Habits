@@ -49,8 +49,9 @@ def main(argv=None):
         print("POST /predict")
         print(json.dumps(record, indent=2))
         status, body = call(f"{base_url}/predict", record)
-    except urllib.error.URLError as error:
-        print(f"Error: no se pudo conectar con {base_url}: {error.reason}", file=sys.stderr)
+    except OSError as error:
+        # Incluye la conexión rechazada y la que se corta mientras la API todavía está arrancando
+        print(f"Error: no se pudo conectar con {base_url}: {getattr(error, 'reason', error)}", file=sys.stderr)
         return 1
 
     print("->", status, json.dumps(body, ensure_ascii=False))
