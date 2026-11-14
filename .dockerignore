@@ -1,0 +1,8 @@
+# Contexto de las imágenes que se construyen desde la raíz (fase-3 en adelante).
+# Solo entra el código; los datos y los modelos llegan por montaje de carpeta.
+*
+!fase-2/requirements.txt
+!fase-2/common.py
+!fase-2/train.py
+!fase-3/requirements.txt
+!fase-3/api.py
