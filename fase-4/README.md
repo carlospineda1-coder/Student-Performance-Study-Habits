@@ -113,6 +113,34 @@ Las pruebas escriben el registro en una carpeta temporal y predicen con la versi
 
 ## Reporte
 
+### Ejecución
+
+Ensayo del 18 de noviembre de 2026 en Docker (Bash), con los comandos de la sección Docker, la versión `v2` activa y el registro vacío. Se enviaron dos solicitudes válidas con el primer estudiante del dataset y una tercera sin `sleep_hours`:
+
+```
+$ python fase-3/cliente.py
+-> 200 {"prediccion": 93.72052191273534, "version": "v2"}
+$ python fase-3/cliente.py
+-> 200 {"prediccion": 93.72052191273534, "version": "v2"}
+$ python fase-3/cliente.py --omitir sleep_hours
+-> 422 {"detail": "Falta el campo obligatorio sleep_hours"}
+
+$ python fase-4/monitoreo.py
+Total de solicitudes: 3
+Porcentaje de solicitudes fallidas: 33,3 % (1 de 3)
+```
+
+El registro de esa ejecución está en `registro_muestra.csv`, y sus tres filas coinciden con las respuestas:
+
+```
+fecha_hora,estado_http,version,prediccion
+2026-11-18T22:19:48+00:00,200,v2,93.72052191273534
+2026-11-18T22:19:49+00:00,200,v2,93.72052191273534
+2026-11-18T22:19:49+00:00,422,,
+```
+
+La API respondió las dos solicitudes válidas con `v2` y rechazó la tercera con 422 porque faltaba `sleep_hours`. La tasa de fallos fue 1/3 (33,3 %); el rechazo era el resultado esperado de la prueba de validación, no un fallo del modelo.
+
 ### Versiones
 
 Las dos están en `fase-2/models/`, cada una con su `modelo.joblib`, `metrics.json` y `metadata.json`.
