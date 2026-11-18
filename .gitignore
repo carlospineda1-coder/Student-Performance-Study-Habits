@@ -42,3 +42,7 @@ Thumbs.db
 # fase-2 necesita su propia copia del dataset para ser autocontenida (Docker, scripts)
 !fase-2/data/
 !fase-2/data/*.csv
+
+# fase-4: el registro de trabajo no se versiona; la muestra del reporte sí
+fase-4/logs/
+!fase-4/registro_muestra.csv
