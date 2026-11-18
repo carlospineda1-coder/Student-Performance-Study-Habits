@@ -69,6 +69,8 @@ Respuesta, HTTP 200:
 {"prediccion": 93.72052191273534, "version": "v1"}
 ```
 
+`prediccion` es el puntaje estimado, recortado a la escala 0–100 como en la Fase 2.
+
 | Caso | Respuesta |
 |------|-----------|
 | Campo con `null` | 200. Se imputa con la regla guardada en la Fase 2: mediana en numéricas, valor más frecuente en categóricas |
@@ -146,10 +148,12 @@ python -m pytest
 $env:PYTHONPATH = "../fase-2"; uvicorn api:app --port 8000
 ```
 
-Las pruebas usan el cliente de pruebas de FastAPI y entrenan una versión en una carpeta temporal: no tocan `fase-2/models/` ni necesitan la API en ejecución. Comprueban que:
+Las pruebas usan el cliente de pruebas de FastAPI y entrenan una versión en una carpeta temporal; de `fase-2/models/` solo leen `v1`. No necesitan la API en ejecución. Comprueban que:
 
 - `/health` responde 200;
 - una entrada válida devuelve la predicción y la versión;
+- las filas de `fase-2/data/ejemplo_prediccion.csv` dan con `v1` las mismas predicciones que `predict.py` en la Fase 2, para detectar cambios no previstos;
+- la predicción se recorta a 0–100;
 - una entrada sin un campo obligatorio se rechaza con el nombre del campo;
 - un tipo incompatible y una categoría nueva se rechazan;
 - un `null` se imputa con el valor aprendido en el entrenamiento;
@@ -163,7 +167,7 @@ En local (Bash, Python 3.11.2):
 
 ```
 $ python -m pytest
-11 passed in 0.44s
+13 passed in 0.52s
 
 $ python cliente.py
 GET /health -> 200 {"status": "ok"}

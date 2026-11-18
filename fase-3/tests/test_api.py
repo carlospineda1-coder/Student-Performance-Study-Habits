@@ -1,4 +1,8 @@
 import pytest
+from fastapi.testclient import TestClient
+
+import api
+from common import load_dataset
 
 
 def test_health_responde_200(client):
@@ -54,6 +58,15 @@ def test_categoria_no_vista_se_rechaza(client, record):
     assert "Female, Male" in response.json()["detail"]
 
 
+def test_la_prediccion_se_recorta_a_la_escala_0_100(client, record):
+    # Sin recorte, este estudiante recibe más de 100
+    record.update(study_time_hours=12.0, attendance_percent=100.0, previous_grade=100.0)
+
+    response = client.post("/predict", json=record)
+
+    assert response.json()["prediccion"] == 100.0
+
+
 def test_null_se_imputa_con_la_regla_del_entrenamiento(client, record, models_dir):
     import joblib
 
@@ -95,3 +108,19 @@ def test_train_guarda_la_siguiente_version_y_conserva_la_anterior(client, record
     assert (models_dir / "v1" / "modelo.joblib").read_bytes() == before
     # /predict sigue usando la versión configurada
     assert client.post("/predict", json=record).json()["version"] == "v1"
+
+
+
+def test_entrada_conocida_da_las_mismas_predicciones_que_en_la_fase_2(monkeypatch):
+    """Envía las filas de fase-2/data/ejemplo_prediccion.csv a la versión v1 entregada. Los valores
+    esperados son los que dio predict.py en la evidencia de la fase 2."""
+    monkeypatch.setenv("MODELS_DIR", str(api.FASE_2 / "models"))
+    monkeypatch.setenv("MODEL_VERSION", "v1")
+    rows = load_dataset(api.FASE_2 / "data" / "ejemplo_prediccion.csv")
+    # La tercera fila tiene sleep_hours vacío: en JSON se envía como null
+    records = rows.astype(object).where(rows.notna(), None).to_dict(orient="records")
+
+    client = TestClient(api.app)
+    predictions = [client.post("/predict", json=record).json()["prediccion"] for record in records]
+
+    assert predictions == pytest.approx([96.71768844752711, 54.092953845099565, 80.059732182935])
