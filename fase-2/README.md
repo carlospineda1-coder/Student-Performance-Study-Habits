@@ -34,7 +34,8 @@ fase-2/
 │   └── ejemplo_prediccion.csv            # 3 filas sin la variable objetivo, una con una celda vacía
 ├── models/            # cada versión con modelo.joblib, metrics.json y metadata.json
 │   ├── v1/            # entrenada en local
-│   └── v-docker/      # entrenada dentro del contenedor
+│   ├── v-docker/      # entrenada dentro del contenedor
+│   └── v2/            # creada con POST /train de la API (fase 3)
 ├── outputs/           # predicciones generadas (no se versiona)
 └── tests/
 ```
