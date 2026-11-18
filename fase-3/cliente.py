@@ -32,7 +32,12 @@ def call(url, payload=None):
         with urllib.request.urlopen(request, timeout=10) as response:
             return response.status, json.load(response)
     except urllib.error.HTTPError as error:
-        return error.code, json.load(error)
+        # Un error interno puede llegar como texto plano y no como JSON
+        text = error.read().decode("utf-8", errors="replace")
+        try:
+            return error.code, json.loads(text)
+        except ValueError:
+            return error.code, text
 
 
 def main(argv=None):
