@@ -122,7 +122,7 @@ curl -X POST http://localhost:8000/train
 ls fase-2/models
 ```
 
-`cliente.py` solo usa la biblioteca estándar de Python y acepta `--url` si la API está en otra dirección. La documentación interactiva queda en `http://localhost:8000/docs`.
+`cliente.py` solo usa la biblioteca estándar de Python y acepta `--url` si la API está en otra dirección y `--omitir CAMPO` para enviar el registro sin un campo y ver el rechazo. La documentación interactiva queda en `http://localhost:8000/docs`.
 
 ## Ejecución local y pruebas
 
