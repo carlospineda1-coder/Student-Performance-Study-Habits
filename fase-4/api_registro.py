@@ -29,12 +29,8 @@ async def log_predict_requests(request, call_next):
     respuesta, también quedan registradas las que la validación rechaza antes de llegar a la ruta."""
     if request.url.path != "/predict":
         return await call_next(request)
-    try:
-        response = await call_next(request)
-    except Exception:
-        # Un error no previsto llega al cliente como HTTP 500 sin pasar por aquí: se registra antes
-        record_event(500)
-        raise
+    # Un error no previsto también llega aquí, ya convertido en HTTP 500 por la API
+    response = await call_next(request)
     if response.status_code != 200:
         record_event(response.status_code)
         return response
