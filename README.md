@@ -29,6 +29,7 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
 ## Estructura del repositorio
 
 ```
+├── .dockerignore
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
@@ -38,15 +39,31 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
 │   ├── student_performance_dataset.csv
 │   └── modelo/
 │       └── pipeline_modelo.joblib
-└── fase-2/                              ← Scripts y Docker
+├── fase-2/                              ← Scripts y Docker
+│   ├── README.md
+│   ├── requirements.txt
+│   ├── common.py
+│   ├── train.py
+│   ├── predict.py
+│   ├── Dockerfile
+│   ├── data/
+│   ├── models/
+│   └── tests/
+├── fase-3/                              ← API REST
+│   ├── README.md
+│   ├── requirements.txt
+│   ├── api.py
+│   ├── cliente.py
+│   ├── Dockerfile
+│   └── tests/
+└── fase-4/                              ← Monitoreo
     ├── README.md
     ├── requirements.txt
-    ├── common.py
-    ├── train.py
-    ├── predict.py
+    ├── registro.py
+    ├── api_registro.py
+    ├── monitoreo.py
+    ├── registro_muestra.csv
     ├── Dockerfile
-    ├── data/
-    ├── models/
     └── tests/
 ```
 
@@ -58,8 +75,8 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
 |------|-------------|--------|
 | Fase 1 | Modelo predictivo | ✅ Completada |
 | Fase 2 | Scripts y Docker | ✅ Completada |
-| Fase 3 | API REST | ⬜ Pendiente |
-| Fase 4 | Monitoreo básico | ⬜ Pendiente |
+| Fase 3 | API REST | ✅ Completada |
+| Fase 4 | Monitoreo básico | ✅ Completada |
 
 ---
 
@@ -87,7 +104,7 @@ Proyecto integrador que lleva un modelo de Machine Learning desde un notebook ha
    jupyter notebook fase1_modelo_predictivo.ipynb
    ```
 
-La Fase 2 (scripts y Docker) tiene su propio entorno e instrucciones en [fase-2/README.md](fase-2/README.md).
+Las fases 2, 3 y 4 tienen su propio entorno e instrucciones en [fase-2/README.md](fase-2/README.md), [fase-3/README.md](fase-3/README.md) y [fase-4/README.md](fase-4/README.md).
 
 ---
 
