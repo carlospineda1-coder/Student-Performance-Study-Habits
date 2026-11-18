@@ -16,9 +16,14 @@ from registro import append_event
 async def log_predict_requests(request, call_next):
     """Registra cada solicitud a /predict cuando ya se conoce su resultado. Al envolver la
     respuesta, también quedan registradas las que la validación rechaza antes de llegar a la ruta."""
-    response = await call_next(request)
     if request.url.path != "/predict":
-        return response
+        return await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        # Un error no previsto llega al cliente como HTTP 500 sin pasar por aquí: se registra antes
+        append_event(500)
+        raise
     if response.status_code != 200:
         append_event(response.status_code)
         return response

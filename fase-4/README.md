@@ -104,7 +104,7 @@ $env:PYTHONPATH = "../fase-2;../fase-3"; $env:MODEL_VERSION = "v2"; uvicorn api_
 Las pruebas escriben el registro en una carpeta temporal y predicen con la versión `v1` de `fase-2/models/`, que solo se lee. Comprueban que:
 
 - cada solicitud a `/predict` deja una sola fila, también la rechazada por validación;
-- un 503 se registra sin versión ni predicción, y las demás rutas no se registran;
+- un 503 y un error interno (500) se registran sin versión ni predicción, y las demás rutas no se registran;
 - el registro no cambia la respuesta que recibe el cliente y se conserva entre ejecuciones;
 - dos solicitudes válidas y una inválida dan 3 solicitudes y 33,3 % de fallos;
 - los códigos 4xx y 5xx cuentan como fallos;

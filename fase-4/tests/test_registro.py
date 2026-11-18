@@ -38,6 +38,23 @@ def test_sin_modelo_se_registra_el_503_sin_version(client, record, log_file, mon
     assert (row["estado_http"], row["version"], row["prediccion"]) == ("503", "", "")
 
 
+def test_un_error_interno_se_registra_como_500(record, log_file, monkeypatch):
+    import api
+    import api_registro
+    from fastapi.testclient import TestClient
+
+    def fail(*args):
+        raise RuntimeError("fallo no previsto")
+
+    monkeypatch.setattr(api, "predict_scores", fail)
+
+    response = TestClient(api_registro.app, raise_server_exceptions=False).post("/predict", json=record)
+
+    assert response.status_code == 500
+    (row,) = read_rows(log_file)
+    assert (row["estado_http"], row["version"], row["prediccion"]) == ("500", "", "")
+
+
 def test_las_demas_rutas_no_se_registran(client, log_file):
     client.get("/health")
 
