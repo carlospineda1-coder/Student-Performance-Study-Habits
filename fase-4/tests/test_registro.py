@@ -61,15 +61,33 @@ def test_las_demas_rutas_no_se_registran(client, log_file):
     assert not log_file.exists()
 
 
-def test_el_registro_se_conserva_entre_ejecuciones(client, record, log_file):
-    from fastapi.testclient import TestClient
-
-    import api_registro
+def test_el_registro_conserva_el_historial(client, record, log_file):
+    log_file.parent.mkdir()
+    previous = "fecha_hora,estado_http,version,prediccion\n2026-11-06T10:00:00+00:00,200,v1,18.7\n"
+    log_file.write_text(previous, encoding="utf-8")
 
     client.post("/predict", json=record)
-    TestClient(api_registro.app).post("/predict", json=record)
 
-    with open(log_file, encoding="utf-8") as f:
-        lines = f.read().splitlines()
-    assert len(lines) == 3
-    assert lines[0] == "fecha_hora,estado_http,version,prediccion"
+    content = log_file.read_text(encoding="utf-8")
+    assert content.startswith(previous)
+    assert len(content.splitlines()) == 3
+
+
+def test_un_registro_que_no_se_puede_escribir_no_cambia_la_respuesta(client, record, tmp_path, monkeypatch):
+    blocker = tmp_path / "archivo"
+    blocker.write_text("")
+    monkeypatch.setenv("LOG_PATH", str(blocker / "predicciones.csv"))
+
+    response = client.post("/predict", json=record)
+
+    assert response.status_code == 200
+    assert set(response.json()) == {"prediccion", "version"}
+
+
+def test_la_api_de_la_fase_3_no_queda_modificada(record, log_file):
+    import api
+    from fastapi.testclient import TestClient
+
+    TestClient(api.app).post("/predict", json=record)
+
+    assert not log_file.exists()

@@ -36,3 +36,11 @@ def test_registro_inexistente_o_vacio_informa_sin_solicitudes(tmp_path, capsys):
         output = capsys.readouterr().out
         assert "Total de solicitudes: 0" in output
         assert "Porcentaje de solicitudes fallidas: sin solicitudes" in output
+
+
+def test_un_registro_con_una_fila_cortada_da_un_error_legible(tmp_path, capsys):
+    path = tmp_path / "cortado.csv"
+    path.write_text("fecha_hora,estado_http,version,prediccion\n2026-11-06T10:00:00+00:00\n", encoding="utf-8")
+
+    assert monitoreo.main([str(path)]) == 1
+    assert "no se pudo leer" in capsys.readouterr().err

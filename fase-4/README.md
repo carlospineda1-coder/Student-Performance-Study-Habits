@@ -8,7 +8,7 @@ Agrega a la API de la Fase 3 un registro de las solicitudes a `/predict` y un sc
 
 ## Cambios respecto a la Fase 3
 
-Las rutas, la validación y las respuestas son las de `fase-3/api.py`, sin copiar: `api_registro.py` importa esa API y solo le añade el registro. El cliente de `fase-3/` ganó la opción `--omitir CAMPO` para enviar la solicitud inválida del ensayo.
+Las rutas, la validación y las respuestas son las de `fase-3/api.py`, sin copiar: `api_registro.py` envuelve esa API con el registro, sin modificarla. El cliente de `fase-3/` ganó la opción `--omitir CAMPO` para enviar la solicitud inválida del ensayo.
 
 ## Estructura
 
@@ -35,7 +35,7 @@ Cada solicitud a `/predict` agrega una fila a un CSV cuando ya se conoce su resu
 | `version` | Versión que predijo; vacía si no se usó ningún modelo |
 | `prediccion` | Valor devuelto; vacío en un error |
 
-El archivo se abre en modo de agregar, así que se conserva entre ejecuciones. Su ubicación es `fase-4/logs/predicciones.csv` y se cambia con la variable de entorno `LOG_PATH`. Las demás variables (`MODEL_VERSION`, `MODELS_DIR`, `DATA_PATH`) son las de la [Fase 3](../fase-3/README.md#configuración).
+El archivo se abre en modo de agregar, así que se conserva entre ejecuciones. Si no se puede escribir, la API responde igual y el error aparece en la consola del servidor. Su ubicación es `fase-4/logs/predicciones.csv` y se cambia con la variable de entorno `LOG_PATH`. Las demás variables (`MODEL_VERSION`, `MODELS_DIR`, `DATA_PATH`) son las de la [Fase 3](../fase-3/README.md#configuración).
 
 ## Docker
 
@@ -105,10 +105,11 @@ Las pruebas escriben el registro en una carpeta temporal y predicen con la versi
 
 - cada solicitud a `/predict` deja una sola fila, también la rechazada por validación;
 - un 503 y un error interno (500) se registran sin versión ni predicción, y las demás rutas no se registran;
-- el registro no cambia la respuesta que recibe el cliente y se conserva entre ejecuciones;
+- el registro no cambia la respuesta que recibe el cliente, ni siquiera si no se puede escribir, y conserva el historial;
+- la API de `fase-3/` sigue sin registro: solo se registra al arrancar `api_registro`;
 - dos solicitudes válidas y una inválida dan 3 solicitudes y 33,3 % de fallos;
 - los códigos 4xx y 5xx cuentan como fallos;
-- un registro vacío o inexistente da total 0 y «sin solicitudes».
+- un registro vacío o inexistente da total 0 y «sin solicitudes», y uno con una fila cortada da un error legible.
 
 ## Reporte
 

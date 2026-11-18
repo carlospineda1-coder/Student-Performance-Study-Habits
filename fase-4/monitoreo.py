@@ -28,7 +28,7 @@ def main(argv=None):
 
     try:
         total, failed = count_requests(path)
-    except (OSError, KeyError, ValueError) as error:
+    except (OSError, KeyError, TypeError, ValueError) as error:
         print(f"Error: no se pudo leer {path} como registro: {error!r}", file=sys.stderr)
         return 1
 
